@@ -44,7 +44,6 @@ const DataProcessingPage = ({
   }, [project.parameters, generateArray]);
 
   useEffect(() => {
-    console.log("JSON INPUT: ", jsonInput);
     console.log("JSON STRING: ", getJsonString(data));
     setJsonInput(getJsonString(data));
   }, [data]);
@@ -116,10 +115,13 @@ const DataProcessingPage = ({
     [project.parameters, setData]
   );
 
-  const handleJsonChange = (e) => {
-    setJsonInput(e.target.value);
-    validateJson(e.target.value);
-  };
+  const handleJsonChange = useCallback(
+    (e) => {
+      setJsonInput(e.target.value);
+      validateJson(e.target.value);
+    },
+    [validateJson]
+  );
 
   const getBoxContent = useCallback(() => {
     let all_defined = true;
@@ -195,7 +197,7 @@ const DataProcessingPage = ({
         <br />
       </div>
     );
-  }, [project.parameters, data, getDummyData, setData, jsonInput]);
+  }, [project.parameters, data, getDummyData, setData, jsonInput, errors, handleJsonChange]);
 
   useEffect(() => {
     let all_pass = true;

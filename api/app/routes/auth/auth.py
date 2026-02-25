@@ -45,6 +45,31 @@ def login_required(f):
     return decorated_function
 
 
+@bp.route("/signup", methods=["POST"])
+def signup():
+    data = request.json or {}
+    email = data.get("email")
+    password = data.get("password")
+
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+
+    try:
+        # Create the user via the Admin SDK
+        user = auth.create_user(email=email, password=password)
+
+        # Create a custom token for the client to sign in
+        custom_token = auth.create_custom_token(user.uid)
+        # create_custom_token returns bytes in py3; decode to string
+        if isinstance(custom_token, bytes):
+            custom_token = custom_token.decode("utf-8")
+
+        return jsonify({"customToken": custom_token}), 200
+    except Exception as e:
+        # Return a clear error for the frontend to display
+        return jsonify({"error": str(e)}), 400
+
+
 def check_project_ownership(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):

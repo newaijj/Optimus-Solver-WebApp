@@ -162,15 +162,15 @@ const CodingPage = ({
     //     for (const constraint of project.constraints) {
     //         await handleCodeClick(constraint, "constraint");
     //     }
-    let new_project = project;
+  // local working reference removed; updateProject will be awaited where needed
     try {
       for (const obj of project.objective) {
         await handleCodeClick(obj, "objective");
-        let new_project = await updateProject();
+        await updateProject();
       }
       for (const constraint of project.constraints) {
         await handleCodeClick(constraint, "constraint");
-        let new_project = await updateProject();
+        await updateProject();
       }
       // Ensure project is updated after all formulations
       await updateProject(); // Ensure this is awaited to get the latest project

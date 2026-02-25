@@ -14,7 +14,6 @@ function MainApp({ isDark, setIsDark }) {
   // get project_id from path="/project/:project_id"
   const { project_id } = useParams();
   const [project, setProject] = useState({});
-  const [dummyState, setDummyState] = useState(false); // Dummy state to force re-render
 
   const updateProject = useCallback(async () => {
     try {
@@ -34,7 +33,7 @@ function MainApp({ isDark, setIsDark }) {
       const data = await response.json();
       console.log("Project:", data["project"]);
       setProject(data["project"]);
-      setDummyState((prev) => !prev); // Toggle dummy state to force re-render
+  // project state updated
       return data["project"];
     } catch (error) {
       console.error("Error fetching project:", error);

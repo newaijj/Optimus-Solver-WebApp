@@ -2,10 +2,7 @@ import "./Auth.css";
 import React, { useState } from "react";
 
 import { Link } from "react-router-dom";
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-} from "firebase/auth";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 const SignupPage = ({ isDark, setIsDark }) => {
     const [email, setEmail] = useState("");
@@ -42,7 +39,7 @@ const SignupPage = ({ isDark, setIsDark }) => {
         validatePassword(e.target.value);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         const auth = getAuth();
 
@@ -56,41 +53,43 @@ const SignupPage = ({ isDark, setIsDark }) => {
             setErrMsg(er);
             return;
         }
-
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // User created
-                // const user = userCredential.user;
-
-                // sendEmailVerification(user).then(() => {
-                //     // Email verification sent
-                //     // Inform the user to check their email for verification
-                //     setErrMsg(
-                //         <div className="text-success">
-                //             Verification email sent! Please check your email and
-                //             click the link to verify your email.
-                //             <p>
-                //                 Didn't receive the email?{" "}
-                //                 <Link
-                //                     to="/verify-email"
-                //                     className="link link-primary"
-                //                 >
-                //                     Resend
-                //                 </Link>
-                //             </p>
-                //         </div>
-                //     );
-                // });
-            })
-            .catch((error) => {
-                console.log("Error signing up:", error.code, error.message);
-
-                if (error.code === "auth/email-already-in-use") {
-                    setErrMsg("There is already an account with this email");
-                } else {
-                    setErrMsg("Error signing up");
+        // Use server-side signup (Admin SDK) to avoid client Identity Toolkit requirement.
+        try {
+            const res = await fetch(
+                process.env.REACT_APP_BACKEND_URL + "/auth/signup",
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ email, password }),
                 }
-            });
+            );
+
+            const body = await res.json();
+            if (!res.ok) {
+                console.log("Error signing up (server):", body);
+                setErrMsg(body.error || "Error signing up");
+                return;
+            }
+
+            const { customToken } = body;
+            if (!customToken) {
+                setErrMsg("No custom token returned from server");
+                return;
+            }
+
+            // Sign in with custom token
+            try {
+                await signInWithCustomToken(auth, customToken);
+                // Successful sign-in; redirect or update UI as needed
+            } catch (signErr) {
+                console.log("Error signing in with custom token:", signErr);
+                setErrMsg("Error signing in after signup");
+            }
+        } catch (error) {
+            console.log("Error signing up (network):", error);
+            setErrMsg("Error signing up");
+        }
     };
 
     return (

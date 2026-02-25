@@ -1,0 +1,10 @@
+__pycache__
+.venv
+*.pyc
+node_modules
+interface/node_modules
+dist
+build
+*.log
+*.sqlite3
+.vscode

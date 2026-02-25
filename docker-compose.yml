@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: api/Dockerfile
+    image: optimus-api:local
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - FLASK_ENV=production
+      - API_URL=http://localhost:5000/api
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: interface/Dockerfile
+    image: optimus-frontend:local
+    ports:
+      - "3000:80"
+    env_file:
+      - interface/.env
+    restart: unless-stopped

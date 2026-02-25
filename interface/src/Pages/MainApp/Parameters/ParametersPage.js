@@ -98,6 +98,7 @@ const ParametersPage = ({
     setModalContent,
     setModalTitle,
     lastShownProblemType, // Add this dependency
+    setLastShownProblemType,
   ]);
 
   const deleteParameter = (key) => {

@@ -21,6 +21,23 @@ const firebaseConfig = {
 console.log(firebaseConfig);
 
 // Initialize Firebase
+// Basic runtime validation to catch missing env vars early and provide a clearer error
+const requiredKeys = [
+  "apiKey",
+  "authDomain",
+  "projectId",
+  "appId",
+];
+const missing = requiredKeys.filter((k) => !firebaseConfig[k]);
+if (missing.length > 0) {
+  console.error("Firebase configuration is missing required keys:", missing, firebaseConfig);
+  // throw an informative error so it's obvious during development
+  throw new Error(
+    `Firebase configuration missing required keys: ${missing.join(", ")}. ` +
+      `Make sure your interface/.env contains REACT_APP_FIREBASE_* vars and restart the dev server.`
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
