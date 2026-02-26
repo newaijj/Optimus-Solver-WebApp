@@ -39,6 +39,44 @@ Take a deep breath, and solve the problem step by step.
 
 import_code = "import cvxpy as cp"
 
+# This code is used to get the solver information after the model is run. It should support all status (OPTIMAL, INFEASIBLE, UNBOUNDED, etc.) and store the objective value, variables, runtime, and iteration count in the solving_info dictionary.
+get_info_code = """
+import numpy as np
+# Get solver information
+solving_info = {}
+
+if problem.status == cp.OPTIMAL:
+    solving_info["status"] = "Optimal"
+    solving_info["objective_value"] = float(problem.value) if problem.value is not None else None
+    solving_info["variables"] = [
+        {
+            "symbol": var.name(),
+            "value": float(var.value) if np.isscalar(var.value) else var.value.tolist() if hasattr(var.value, 'tolist') else list(var.value),
+        }
+        for var in problem.variables()
+    ]
+    solving_info["runtime"] = problem.solver_stats.solve_time
+    solving_info["iteration_count"] = problem.solver_stats.num_iters
+elif problem.status == cp.INFEASIBLE:
+    solving_info["status"] = "Infeasible"
+    solving_info["objective_value"] = None
+    solving_info["variables"] = []
+    solving_info["runtime"] = problem.solver_stats.solve_time
+    solving_info["iteration_count"] = problem.solver_stats.num_iters
+elif problem.status == cp.UNBOUNDED:
+    solving_info["status"] = "Unbounded"
+    solving_info["objective_value"] = None
+    solving_info["variables"] = []
+    solving_info["runtime"] = problem.solver_stats.solve_time
+    solving_info["iteration_count"] = problem.solver_stats.num_iters
+else:
+    solving_info["status"] = f"Status: {problem.status}"
+    solving_info["objective_value"] = None
+    solving_info["variables"] = []
+    solving_info["runtime"] = None
+    solving_info["iteration_count"] = None
+"""
+
 
 def generate_variable_code(symbol, type, shape):
     type = type.upper()

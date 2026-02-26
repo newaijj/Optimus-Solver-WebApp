@@ -77,13 +77,27 @@ def prep_problem_json(state):
     return state
 
 
+def convert_to_serializable(obj):
+    """Convert numpy arrays and other non-serializable objects to JSON-serializable types."""
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif isinstance(obj, (np.floating, np.integer)):
+        return float(obj) if isinstance(obj, np.floating) else int(obj)
+    elif isinstance(obj, dict):
+        return {k: convert_to_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [convert_to_serializable(item) for item in obj]
+    else:
+        return obj
+
+
 def run_code(code, data):
     local_env = {}
     print("CODE", code)
     try:
         res = exec(code, local_env, local_env)
 
-        return {
+        result = {
             "success": True,
             "obj_val": local_env["obj_val"] if "obj_val" in local_env else None,
             "status": local_env["status"] if "status" in local_env else None,
@@ -93,6 +107,9 @@ def run_code(code, data):
             "error_message": None,
             "error_traceback": None,
         }
+        
+        # Convert all numpy objects to JSON-serializable types
+        return convert_to_serializable(result)
     except Exception as e:
         print(e)
         import traceback
